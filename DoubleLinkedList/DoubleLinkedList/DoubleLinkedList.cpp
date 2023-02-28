@@ -16,8 +16,13 @@ struct DoubleLinkedList
     Node<T>* tailNode = nullptr;
 
     //Adds a node at the end
-    void AddNode(Node<T>* nodeToAdd)
+    bool AddNode(Node<T>* nodeToAdd)
     {
+        if(nodeToAdd == nullptr)
+        {
+            return false;
+        }
+        
         if(headNode == nullptr)
         {
             headNode = nodeToAdd;
@@ -29,6 +34,8 @@ struct DoubleLinkedList
             nodeToAdd->previousNode = tailNode;
             tailNode = nodeToAdd;
         }
+
+        return true;
     }
 
     bool InsertAfter(Node<T>* node, Node<T>* nodeToAdd)
@@ -38,29 +45,20 @@ struct DoubleLinkedList
             return false;
         }
         
-        Node<T>* tmp = headNode;
-
-        while (tmp != nullptr)
+        if(node == tailNode)
         {
-            if(tmp == node)
-            {
-                if(node == tailNode)
-                {
-                    tailNode = nodeToAdd;
-                }
-                nodeToAdd->previousNode = node;
-                nodeToAdd->nextNode = node->nextNode;
-                node->nextNode = nodeToAdd;
-
-                return true;
-            }
-            else
-            {
-                tmp = tmp->nextNode;
-            }
+            tailNode = nodeToAdd;
+        }
+        else
+        {
+            node->nextNode->previousNode = nodeToAdd;
         }
 
-        return false;
+        nodeToAdd->previousNode = node;
+        nodeToAdd->nextNode = node->nextNode;
+        node->nextNode = nodeToAdd;
+
+        return true;
     }
 
     bool InsertBefore(Node<T>* node, Node<T>* nodeToAdd)
@@ -70,30 +68,25 @@ struct DoubleLinkedList
             return false;
         }
 
-        Node<T>* tmp = headNode;
-
-        while (tmp != nullptr)
+        if (node == headNode)
         {
-            if (tmp == node)
-            {
-                if (node == headNode)
-                {
-                    headNode = nodeToAdd;
-                }
-                nodeToAdd->previousNode = node->previousNode;
-                nodeToAdd->nextNode = node;
-                node->previousNode = nodeToAdd;
-
-                return true;
-            }
+            headNode = nodeToAdd;
         }
-
-        return false;
+        else
+        {
+            node->previousNode->nextNode = nodeToAdd;    
+        }
+        
+        nodeToAdd->previousNode = node->previousNode;
+        nodeToAdd->nextNode = node;
+        node->previousNode = nodeToAdd;
+        
+        return true;
     }
 
     bool InsertAtIndex(int index, Node<T>* nodeToAdd)
     {
-        if(index > Count() - 1)
+        if(index > Count() - 1 || nodeToAdd == nullptr)
         {
             return false;
         }
@@ -125,6 +118,41 @@ struct DoubleLinkedList
         return true;
     }
 
+    bool RemoveNode(Node<T>* nodeToRemove)
+    {
+        if(nodeToRemove == nullptr)
+        {
+            return false;
+        }
+
+        if(nodeToRemove == headNode && nodeToRemove == tailNode)
+        {
+            headNode = nullptr;
+            tailNode = nullptr;
+
+            return true;
+        }
+        if(nodeToRemove == headNode)
+        {
+            nodeToRemove->nextNode->previousNode = nullptr;
+            headNode = nodeToRemove->nextNode;
+
+            return true;
+        }
+        if(nodeToRemove == tailNode)
+        {
+            nodeToRemove->previousNode->nextNode = nullptr;
+            tailNode = nodeToRemove->previousNode;
+
+            return true;
+        }
+
+        nodeToRemove->previousNode->nextNode = nodeToRemove->nextNode;
+        nodeToRemove->nextNode->previousNode = nodeToRemove->previousNode;
+
+        return true;
+    }
+
     int Count()
     {
         if(headNode == nullptr)
@@ -145,7 +173,7 @@ struct DoubleLinkedList
         return count;
     }
 
-    void Print()
+    void PrintForward()
     {
         if(headNode == nullptr)
         {
@@ -158,6 +186,22 @@ struct DoubleLinkedList
         {
             std::cout << tmp->data << ", ";
             tmp = tmp->nextNode;
+        }
+    }
+
+    void PrintBackward()
+    {
+        if(headNode == nullptr)
+        {
+            return;
+        }
+        
+        Node<T>* tmp = tailNode;
+
+        while (tmp != nullptr)
+        {
+            std::cout << tmp->data << ", ";
+            tmp = tmp->previousNode;
         }
     }
 };
@@ -180,19 +224,19 @@ int main(int argc, char* argv[])
     
     list.AddNode(&node);
 
-    list.Print();
+    list.PrintForward();
     std::cout << "\n";
     std::cout << "List has " << list.Count() << " nodes\n";
     
     list.AddNode(&node2);
 
-    list.Print();
+    list.PrintForward();
     std::cout << "\n";
     std::cout << "List has " << list.Count() << " nodes\n";
     
-    list.InsertAtIndex(0, &node3);
+    list.InsertBefore(&node, &node3);
 
-    list.Print();
+    list.PrintForward();
     std::cout << "\n";
     std::cout << "List has " << list.Count() << " nodes\n";
     
